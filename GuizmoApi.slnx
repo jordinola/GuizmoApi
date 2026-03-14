@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GuizmoApi.Api/GuizmoApi.Api.csproj" />
+    <Project Path="src/GuizmoApi.Application/GuizmoApi.Application.csproj" />
+    <Project Path="src/GuizmoApi.Domain/GuizmoApi.Domain.csproj" />
+    <Project Path="src/GuizmoApi.Infrastructure/GuizmoApi.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GuizmoApi.Api.Tests/GuizmoApi.Api.Tests.csproj" />
+    <Project Path="tests/GuizmoApi.Application.Tests/GuizmoApi.Application.Tests.csproj" />
+  </Folder>
+</Solution>

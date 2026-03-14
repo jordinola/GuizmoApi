@@ -1,0 +1,6 @@
+@GuizmoApi.Api_HostAddress = http://localhost:5048
+
+GET {{GuizmoApi.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
