@@ -34,6 +34,14 @@ public class CreateGuizmoRequestValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.Name);
     }
 
+    [Fact]
+    public void Should_fail_when_manufacturer_exceeds_250_chars()
+    {
+        var req = new CreateGuizmoRequest("Widget", new string('A', 251), null, 9.99m);
+        var result = _validator.TestValidate(req);
+        result.ShouldHaveValidationErrorFor(x => x.Manufacturer);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData(null)]
