@@ -78,6 +78,19 @@ public class GuizmosControllerTests
     }
 
     [Fact]
+    public async Task Update_returns_200_when_found()
+    {
+        var dto = new GuizmoDto(1, "New", "NewMfg", null, 2m);
+        _serviceMock.Setup(s => s.UpdateAsync(1, It.IsAny<UpdateGuizmoRequest>(), default)).ReturnsAsync(dto);
+
+        var result = await _controller.Update(1, new UpdateGuizmoRequest("New", "NewMfg", null, 2m), default);
+
+        var ok = result.Result as OkObjectResult;
+        ok.Should().NotBeNull();
+        ok!.StatusCode.Should().Be(200);
+    }
+
+    [Fact]
     public async Task Delete_returns_204_when_deleted()
     {
         _serviceMock.Setup(s => s.DeleteAsync(1, default)).ReturnsAsync(true);
