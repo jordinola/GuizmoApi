@@ -17,5 +17,8 @@ public class UpdateGuizmoRequestValidator : AbstractValidator<UpdateGuizmoReques
 
         RuleFor(x => x.Msrp)
             .GreaterThan(0).WithMessage("MSRP must be greater than zero.");
+
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).WithMessage("CategoryId must be greater than zero.");
     }
 }

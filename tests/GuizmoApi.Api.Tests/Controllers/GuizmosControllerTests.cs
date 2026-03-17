@@ -20,7 +20,7 @@ public class GuizmosControllerTests
     [Fact]
     public async Task GetAll_returns_200_with_list()
     {
-        var dtos = new List<GuizmoDto> { new(1, "Widget", "Acme", null, 9.99m) };
+        var dtos = new List<GuizmoDto> { new(1, "Widget", "Acme", null, 9.99m, 1, "Electronics") };
         _serviceMock.Setup(s => s.GetAllAsync(default)).ReturnsAsync(dtos);
 
         var result = await _controller.GetAll(default);
@@ -43,7 +43,7 @@ public class GuizmosControllerTests
     [Fact]
     public async Task GetById_returns_200_when_found()
     {
-        var dto = new GuizmoDto(1, "Widget", "Acme", null, 9.99m);
+        var dto = new GuizmoDto(1, "Widget", "Acme", null, 9.99m, 1, "Electronics");
         _serviceMock.Setup(s => s.GetByIdAsync(1, default)).ReturnsAsync(dto);
 
         var result = await _controller.GetById(1, default);
@@ -55,8 +55,8 @@ public class GuizmosControllerTests
     [Fact]
     public async Task Create_returns_201_with_location_header()
     {
-        var request = new CreateGuizmoRequest("Widget", "Acme", null, 9.99m);
-        var dto = new GuizmoDto(1, "Widget", "Acme", null, 9.99m);
+        var request = new CreateGuizmoRequest("Widget", "Acme", null, 9.99m, 1);
+        var dto = new GuizmoDto(1, "Widget", "Acme", null, 9.99m, 1, "Electronics");
         _serviceMock.Setup(s => s.CreateAsync(request, default)).ReturnsAsync(dto);
 
         var result = await _controller.Create(request, default);
@@ -72,7 +72,7 @@ public class GuizmosControllerTests
         _serviceMock.Setup(s => s.UpdateAsync(99, It.IsAny<UpdateGuizmoRequest>(), default))
             .ReturnsAsync((GuizmoDto?)null);
 
-        var result = await _controller.Update(99, new UpdateGuizmoRequest("X", "Y", null, 1m), default);
+        var result = await _controller.Update(99, new UpdateGuizmoRequest("X", "Y", null, 1m, 1), default);
 
         result.Result.Should().BeOfType<NotFoundResult>();
     }
@@ -80,10 +80,10 @@ public class GuizmosControllerTests
     [Fact]
     public async Task Update_returns_200_when_found()
     {
-        var dto = new GuizmoDto(1, "New", "NewMfg", null, 2m);
+        var dto = new GuizmoDto(1, "New", "NewMfg", null, 2m, 1, "Electronics");
         _serviceMock.Setup(s => s.UpdateAsync(1, It.IsAny<UpdateGuizmoRequest>(), default)).ReturnsAsync(dto);
 
-        var result = await _controller.Update(1, new UpdateGuizmoRequest("New", "NewMfg", null, 2m), default);
+        var result = await _controller.Update(1, new UpdateGuizmoRequest("New", "NewMfg", null, 2m, 1), default);
 
         var ok = result.Result as OkObjectResult;
         ok.Should().NotBeNull();
