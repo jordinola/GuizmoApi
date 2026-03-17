@@ -5,5 +5,7 @@ public record GuizmoDto(
     string Name,
     string Manufacturer,
     string? Description,
-    decimal Msrp
+    decimal Msrp,
+    int CategoryId,
+    string CategoryName
 );

@@ -4,5 +4,6 @@ public record CreateGuizmoRequest(
     string Name,
     string Manufacturer,
     string? Description,
-    decimal Msrp
+    decimal Msrp,
+    int CategoryId
 );

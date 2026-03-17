@@ -7,4 +7,7 @@ public class Guizmo
     public string Manufacturer { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal Msrp { get; set; }
+    public int CategoryId { get; set; }
+
+    public Category Category { get; set; } = null!;
 }

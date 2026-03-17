@@ -20,6 +20,21 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Bad request: {Message}", ex.Message);
+
+            if (context.Response.HasStarted)
+            {
+                return;
+            }
+
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.ContentType = "application/json";
+
+            var response = new { error = ex.Message };
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);

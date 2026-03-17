@@ -10,7 +10,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<IGuizmoService, GuizmoService>();
+        services.AddTransient<IGuizmoService, GuizmoService>();
+        services.AddTransient<ICategoryService, CategoryService>();
         services.AddValidatorsFromAssemblyContaining<CreateGuizmoRequestValidator>();
         return services;
     }
