@@ -1,4 +1,4 @@
-namespace GuizmoApi.Application.Interfaces;
+namespace GuizmoApi.Domain.Interfaces;
 
 public interface IExternalGuizmoApiClient
 {

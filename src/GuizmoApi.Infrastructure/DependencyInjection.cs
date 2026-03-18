@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using GuizmoApi.Infrastructure.Data;
+using GuizmoApi.Infrastructure.ExternalApi;
+using GuizmoApi.Domain.Interfaces;
 
 namespace GuizmoApi.Infrastructure;
 
@@ -13,6 +15,8 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddTransient<IExternalGuizmoApiClient, StubExternalGuizmoApiClient>();
 
         return services;
     }
