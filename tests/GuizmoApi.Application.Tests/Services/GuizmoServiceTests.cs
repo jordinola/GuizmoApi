@@ -294,7 +294,7 @@ public class GuizmoServiceTests
         result.Should().HaveCount(2);
         result.Should().Contain(g => g.Name == "Widget1");
         result.Should().Contain(g => g.Name == "Widget2");
-        result.All(g => g.CategoryName == "Electronics").Should().BeTrue();
+        result.Should().OnlyContain(g => g.CategoryName == "Electronics");
     }
 
     [Fact]
