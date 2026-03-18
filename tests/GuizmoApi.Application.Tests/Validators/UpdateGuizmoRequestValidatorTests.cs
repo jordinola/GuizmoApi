@@ -4,14 +4,14 @@ using GuizmoApi.Application.Validators;
 
 namespace GuizmoApi.Application.Tests.Validators;
 
-public class CreateGuizmoRequestValidatorTests
+public class UpdateGuizmoRequestValidatorTests
 {
-    private readonly CreateGuizmoRequestValidator _validator = new();
+    private readonly UpdateGuizmoRequestValidator _validator = new();
 
     [Fact]
     public void Should_pass_when_all_fields_are_valid()
     {
-        var req = new CreateGuizmoRequest("Widget", "Acme", "A great widget", 9.99m, 1);
+        var req = new UpdateGuizmoRequest("Widget", "Acme", "A great widget", 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldNotHaveAnyValidationErrors();
     }
@@ -21,7 +21,7 @@ public class CreateGuizmoRequestValidatorTests
     [InlineData(null)]
     public void Should_fail_when_name_is_empty(string? name)
     {
-        var req = new CreateGuizmoRequest(name!, "Acme", null, 9.99m, 1);
+        var req = new UpdateGuizmoRequest(name!, "Acme", null, 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldHaveValidationErrorFor(x => x.Name);
     }
@@ -29,17 +29,9 @@ public class CreateGuizmoRequestValidatorTests
     [Fact]
     public void Should_fail_when_name_exceeds_250_chars()
     {
-        var req = new CreateGuizmoRequest(new string('A', 251), "Acme", null, 9.99m, 1);
+        var req = new UpdateGuizmoRequest(new string('A', 251), "Acme", null, 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldHaveValidationErrorFor(x => x.Name);
-    }
-
-    [Fact]
-    public void Should_fail_when_manufacturer_exceeds_250_chars()
-    {
-        var req = new CreateGuizmoRequest("Widget", new string('A', 251), null, 9.99m, 1);
-        var result = _validator.TestValidate(req);
-        result.ShouldHaveValidationErrorFor(x => x.Manufacturer);
     }
 
     [Theory]
@@ -47,7 +39,15 @@ public class CreateGuizmoRequestValidatorTests
     [InlineData(null)]
     public void Should_fail_when_manufacturer_is_empty(string? manufacturer)
     {
-        var req = new CreateGuizmoRequest("Widget", manufacturer!, null, 9.99m, 1);
+        var req = new UpdateGuizmoRequest("Widget", manufacturer!, null, 9.99m, 1);
+        var result = _validator.TestValidate(req);
+        result.ShouldHaveValidationErrorFor(x => x.Manufacturer);
+    }
+
+    [Fact]
+    public void Should_fail_when_manufacturer_exceeds_250_chars()
+    {
+        var req = new UpdateGuizmoRequest("Widget", new string('A', 251), null, 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldHaveValidationErrorFor(x => x.Manufacturer);
     }
@@ -57,7 +57,7 @@ public class CreateGuizmoRequestValidatorTests
     [InlineData(-1)]
     public void Should_fail_when_msrp_is_not_positive(decimal msrp)
     {
-        var req = new CreateGuizmoRequest("Widget", "Acme", null, msrp, 1);
+        var req = new UpdateGuizmoRequest("Widget", "Acme", null, msrp, 1);
         var result = _validator.TestValidate(req);
         result.ShouldHaveValidationErrorFor(x => x.Msrp);
     }
@@ -65,7 +65,7 @@ public class CreateGuizmoRequestValidatorTests
     [Fact]
     public void Description_is_optional()
     {
-        var req = new CreateGuizmoRequest("Widget", "Acme", null, 9.99m, 1);
+        var req = new UpdateGuizmoRequest("Widget", "Acme", null, 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldNotHaveValidationErrorFor(x => x.Description);
     }
@@ -75,15 +75,16 @@ public class CreateGuizmoRequestValidatorTests
     [InlineData(-1)]
     public void Should_fail_when_category_id_is_not_positive(int categoryId)
     {
-        var req = new CreateGuizmoRequest("Widget", "Acme", null, 9.99m, categoryId);
+        var req = new UpdateGuizmoRequest("Widget", "Acme", null, 9.99m, categoryId);
         var result = _validator.TestValidate(req);
-        result.ShouldHaveValidationErrorFor(x => x.CategoryId);
+        result.ShouldHaveValidationErrorFor(x => x.CategoryId)
+            .WithErrorMessage("CategoryId must be greater than zero.");
     }
 
     [Fact]
     public void Should_pass_when_category_id_is_valid()
     {
-        var req = new CreateGuizmoRequest("Widget", "Acme", null, 9.99m, 1);
+        var req = new UpdateGuizmoRequest("Widget", "Acme", null, 9.99m, 1);
         var result = _validator.TestValidate(req);
         result.ShouldNotHaveValidationErrorFor(x => x.CategoryId);
     }

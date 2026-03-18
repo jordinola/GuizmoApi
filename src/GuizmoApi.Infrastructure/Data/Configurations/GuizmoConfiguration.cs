@@ -27,5 +27,12 @@ public class GuizmoConfiguration : IEntityTypeConfiguration<Guizmo>
         builder.Property(g => g.Msrp)
             .HasColumnType("decimal(8,2)")
             .IsRequired();
+
+        builder.Property(g => g.CategoryId).IsRequired();
+
+        builder.HasOne(g => g.Category)
+            .WithMany(c => c.Guizmos)
+            .HasForeignKey(g => g.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
