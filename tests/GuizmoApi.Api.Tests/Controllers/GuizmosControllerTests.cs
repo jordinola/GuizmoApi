@@ -149,4 +149,29 @@ public class GuizmosControllerTests
         _serviceMock.Verify(s => s.GetPagedAsync(query, default), Times.Once);
         result.Result.Should().BeOfType<OkObjectResult>();
     }
+
+    [Fact]
+    public async Task GetRecommended_returns_200_with_list()
+    {
+        var dtos = new List<GuizmoDto> { new(1, "Widget", "Acme", null, 9.99m, 1, "Electronics") };
+        _serviceMock.Setup(s => s.GetRecommendedAsync(5, null, default)).ReturnsAsync(dtos);
+
+        var result = await _controller.GetRecommended(5, new GuizmoRecommendedQuery(null), default);
+
+        var ok = result.Result as OkObjectResult;
+        ok.Should().NotBeNull();
+        ok!.StatusCode.Should().Be(200);
+        ok.Value.Should().BeEquivalentTo(dtos);
+    }
+
+    [Fact]
+    public async Task GetRecommended_passes_userId_and_guizmoId_to_service()
+    {
+        _serviceMock.Setup(s => s.GetRecommendedAsync(7, 42, default))
+            .ReturnsAsync(Enumerable.Empty<GuizmoDto>());
+
+        await _controller.GetRecommended(7, new GuizmoRecommendedQuery(42), default);
+
+        _serviceMock.Verify(s => s.GetRecommendedAsync(7, 42, default), Times.Once);
+    }
 }

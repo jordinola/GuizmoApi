@@ -36,6 +36,19 @@ public class GuizmosController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>Returns recommended Guizmos for a user, based on an external API.</summary>
+    [HttpGet("{userId:int:min(1)}/recommended")]
+    [ProducesResponseType(typeof(IEnumerable<GuizmoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<IEnumerable<GuizmoDto>>> GetRecommended(
+        [FromRoute] int userId,
+        [FromQuery] GuizmoRecommendedQuery query,
+        CancellationToken ct)
+    {
+        var result = await _service.GetRecommendedAsync(userId, query.GuizmoId, ct);
+        return Ok(result);
+    }
+
     /// <summary>Returns a single Guizmo by id.</summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GuizmoDto), StatusCodes.Status200OK)]
