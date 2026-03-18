@@ -271,7 +271,7 @@ public async Task GetRecommendedAsync_returns_empty_list_when_client_returns_no_
 }
 ```
 
-Also add `using Moq;` and `using GuizmoApi.Application.Interfaces;` to the top of the file alongside the existing usings.
+Also add `using Moq;` and `using GuizmoApi.Domain.Interfaces;` to the top of the file alongside the existing usings. Note: `IExternalGuizmoApiClient` was moved to `GuizmoApi.Domain.Interfaces` during Task 2 to avoid a circular project reference.
 
 - [ ] **Step 3: Attempt to build to confirm compilation fails (tests cannot run yet)**
 
