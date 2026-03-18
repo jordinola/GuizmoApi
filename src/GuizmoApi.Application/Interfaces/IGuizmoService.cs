@@ -10,4 +10,5 @@ public interface IGuizmoService
     Task<GuizmoDto?> UpdateAsync(int id, UpdateGuizmoRequest request, CancellationToken ct = default);
     Task<bool> DeleteAsync(int id, CancellationToken ct = default);
     Task<PagedResult<GuizmoDto>> GetPagedAsync(GuizmoPagedQuery query, CancellationToken ct = default);
+    Task<IEnumerable<GuizmoDto>> GetRecommendedAsync(int userId, int? guizmoId, CancellationToken ct = default);
 }
