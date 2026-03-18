@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using GuizmoApi.Application.DTOs;
 using GuizmoApi.Application.Interfaces;
 using GuizmoApi.Domain.Entities;
+using GuizmoApi.Domain.Interfaces;
 using GuizmoApi.Infrastructure.Data;
 
 namespace GuizmoApi.Application.Services;
@@ -9,10 +10,12 @@ namespace GuizmoApi.Application.Services;
 public class GuizmoService : IGuizmoService
 {
     private readonly AppDbContext _context;
+    private readonly IExternalGuizmoApiClient _externalClient;
 
-    public GuizmoService(AppDbContext context)
+    public GuizmoService(AppDbContext context, IExternalGuizmoApiClient externalClient)
     {
         _context = context;
+        _externalClient = externalClient;
     }
 
     public async Task<IEnumerable<GuizmoDto>> GetAllAsync(CancellationToken ct = default)
@@ -102,6 +105,19 @@ public class GuizmoService : IGuizmoService
         _context.Guizmos.Remove(entity);
         await _context.SaveChangesAsync(ct);
         return true;
+    }
+
+    public async Task<IEnumerable<GuizmoDto>> GetRecommendedAsync(int userId, int? guizmoId, CancellationToken ct = default)
+    {
+        var ids = (await _externalClient.GetRecommendedIdsAsync(userId, guizmoId, ct)).ToList();
+
+        var guizmos = await _context.Guizmos
+            .Include(x => x.Category)
+            .AsNoTracking()
+            .Where(g => ids.Contains(g.Id))
+            .ToListAsync(ct);
+
+        return guizmos.Select(ToDto);
     }
 
     private static GuizmoDto ToDto(Guizmo g) =>

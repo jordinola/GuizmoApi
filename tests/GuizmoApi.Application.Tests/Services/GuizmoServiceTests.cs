@@ -1,8 +1,10 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using GuizmoApi.Application.DTOs;
 using GuizmoApi.Application.Services;
 using GuizmoApi.Domain.Entities;
+using GuizmoApi.Domain.Interfaces;
 using GuizmoApi.Infrastructure.Data;
 
 namespace GuizmoApi.Application.Tests.Services;
@@ -30,7 +32,7 @@ public class GuizmoServiceTests
         context.Guizmos.Add(new Guizmo { Name = "Widget", Manufacturer = "Acme", Description = "Nice", Msrp = 9.99m, CategoryId = category.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = (await service.GetAllAsync()).ToList();
 
         result.Should().HaveCount(1);
@@ -49,7 +51,7 @@ public class GuizmoServiceTests
         await context.SaveChangesAsync();
         var id = context.Guizmos.First().Id;
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetByIdAsync(id);
 
         result.Should().NotBeNull();
@@ -63,7 +65,7 @@ public class GuizmoServiceTests
     {
         await using var context = CreateContext(nameof(GetByIdAsync_returns_null_when_not_found));
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetByIdAsync(999);
 
         result.Should().BeNull();
@@ -75,7 +77,7 @@ public class GuizmoServiceTests
         await using var context = CreateContext(nameof(CreateAsync_persists_and_returns_dto_with_id));
         var category = await AddCategoryAsync(context);
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.CreateAsync(new CreateGuizmoRequest("Widget", "Acme", "Desc", 9.99m, category.Id));
 
         result.Id.Should().BeGreaterThan(0);
@@ -90,7 +92,7 @@ public class GuizmoServiceTests
     {
         await using var context = CreateContext(nameof(CreateAsync_throws_when_category_does_not_exist));
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var act = async () => await service.CreateAsync(new CreateGuizmoRequest("Widget", "Acme", null, 9.99m, 999));
 
         await act.Should().ThrowAsync<ArgumentException>()
@@ -106,7 +108,7 @@ public class GuizmoServiceTests
         await context.SaveChangesAsync();
         var id = context.Guizmos.First().Id;
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.UpdateAsync(id, new UpdateGuizmoRequest("New", "NewMfg", null, 2m, category.Id));
 
         result.Should().NotBeNull();
@@ -121,7 +123,7 @@ public class GuizmoServiceTests
         await using var context = CreateContext(nameof(UpdateAsync_returns_null_when_not_found));
         var category = await AddCategoryAsync(context);
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.UpdateAsync(999, new UpdateGuizmoRequest("X", "Y", null, 1m, category.Id));
 
         result.Should().BeNull();
@@ -136,7 +138,7 @@ public class GuizmoServiceTests
         await context.SaveChangesAsync();
         var id = context.Guizmos.First().Id;
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var act = async () => await service.UpdateAsync(id, new UpdateGuizmoRequest("Widget", "Acme", null, 1m, 999));
 
         await act.Should().ThrowAsync<ArgumentException>()
@@ -152,7 +154,7 @@ public class GuizmoServiceTests
         await context.SaveChangesAsync();
         var id = context.Guizmos.First().Id;
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var deleted = await service.DeleteAsync(id);
 
         deleted.Should().BeTrue();
@@ -164,7 +166,7 @@ public class GuizmoServiceTests
     {
         await using var context = CreateContext(nameof(DeleteAsync_returns_false_when_not_found));
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.DeleteAsync(999);
 
         result.Should().BeFalse();
@@ -179,7 +181,7 @@ public class GuizmoServiceTests
             context.Guizmos.Add(new Guizmo { Name = $"Widget{i}", Manufacturer = "Acme", Msrp = i, CategoryId = cat.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery(PageNumber: 2, PageSize: 5));
 
         result.TotalCount.Should().Be(15);
@@ -199,7 +201,7 @@ public class GuizmoServiceTests
         context.Guizmos.Add(new Guizmo { Name = "WidgetA", Manufacturer = "Acme", Msrp = 1m, CategoryId = catA.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery());
 
         var items = result.Items.ToList();
@@ -217,7 +219,7 @@ public class GuizmoServiceTests
         context.Guizmos.Add(new Guizmo { Name = "WidgetZ", Manufacturer = "Acme", Msrp = 1m, CategoryId = catZ.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery(SortOrder: "desc"));
 
         var items = result.Items.ToList();
@@ -235,7 +237,7 @@ public class GuizmoServiceTests
         context.Guizmos.Add(new Guizmo { Name = "WidgetZ", Manufacturer = "Acme", Msrp = 1m, CategoryId = catZ.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery(SortOrder: "DESC"));
 
         var items = result.Items.ToList();
@@ -252,7 +254,7 @@ public class GuizmoServiceTests
             context.Guizmos.Add(new Guizmo { Name = $"Widget{i}", Manufacturer = "Acme", Msrp = i, CategoryId = cat.Id });
         await context.SaveChangesAsync();
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery(PageNumber: 2, PageSize: 5));
 
         result.TotalCount.Should().Be(7);
@@ -265,11 +267,69 @@ public class GuizmoServiceTests
     {
         await using var context = CreateContext(nameof(GetPagedAsync_returns_empty_result_when_no_guizmos_exist));
 
-        var service = new GuizmoService(context);
+        var service = new GuizmoService(context, Mock.Of<IExternalGuizmoApiClient>());
         var result = await service.GetPagedAsync(new GuizmoPagedQuery());
 
         result.TotalCount.Should().Be(0);
         result.TotalPages.Should().Be(0);
         result.Items.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetRecommendedAsync_returns_full_dtos_for_ids_returned_by_client()
+    {
+        await using var context = CreateContext(nameof(GetRecommendedAsync_returns_full_dtos_for_ids_returned_by_client));
+        var category = await AddCategoryAsync(context);
+        context.Guizmos.Add(new Guizmo { Name = "Widget1", Manufacturer = "Acme", Msrp = 1m, CategoryId = category.Id });
+        context.Guizmos.Add(new Guizmo { Name = "Widget2", Manufacturer = "Acme", Msrp = 2m, CategoryId = category.Id });
+        await context.SaveChangesAsync();
+        var ids = context.Guizmos.Select(g => g.Id).ToList();
+
+        var clientMock = new Mock<IExternalGuizmoApiClient>();
+        clientMock.Setup(c => c.GetRecommendedIdsAsync(42, null, default)).ReturnsAsync(ids);
+
+        var service = new GuizmoService(context, clientMock.Object);
+        var result = (await service.GetRecommendedAsync(42, null)).ToList();
+
+        result.Should().HaveCount(2);
+        result.Should().Contain(g => g.Name == "Widget1");
+        result.Should().Contain(g => g.Name == "Widget2");
+        result.All(g => g.CategoryName == "Electronics").Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetRecommendedAsync_excludes_ids_not_in_db()
+    {
+        await using var context = CreateContext(nameof(GetRecommendedAsync_excludes_ids_not_in_db));
+        var category = await AddCategoryAsync(context);
+        context.Guizmos.Add(new Guizmo { Name = "Widget1", Manufacturer = "Acme", Msrp = 1m, CategoryId = category.Id });
+        await context.SaveChangesAsync();
+        var existingId = context.Guizmos.First().Id;
+
+        var clientMock = new Mock<IExternalGuizmoApiClient>();
+        clientMock.Setup(c => c.GetRecommendedIdsAsync(1, null, default))
+            .ReturnsAsync(new[] { existingId, 99999 }); // 99999 does not exist
+
+        var service = new GuizmoService(context, clientMock.Object);
+        var result = (await service.GetRecommendedAsync(1, null)).ToList();
+
+        result.Should().HaveCount(1);
+        result[0].Id.Should().Be(existingId);
+    }
+
+    [Fact]
+    public async Task GetRecommendedAsync_returns_empty_list_when_client_returns_no_ids()
+    {
+        await using var context = CreateContext(nameof(GetRecommendedAsync_returns_empty_list_when_client_returns_no_ids));
+        var category = await AddCategoryAsync(context);
+
+        var clientMock = new Mock<IExternalGuizmoApiClient>();
+        clientMock.Setup(c => c.GetRecommendedIdsAsync(1, null, default))
+            .ReturnsAsync(Enumerable.Empty<int>());
+
+        var service = new GuizmoService(context, clientMock.Object);
+        var result = await service.GetRecommendedAsync(1, null);
+
+        result.Should().BeEmpty();
     }
 }
