@@ -169,4 +169,107 @@ public class GuizmoServiceTests
 
         result.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task GetPagedAsync_returns_correct_page_and_total_count()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_returns_correct_page_and_total_count));
+        var cat = await AddCategoryAsync(context, "Electronics");
+        for (var i = 1; i <= 15; i++)
+            context.Guizmos.Add(new Guizmo { Name = $"Widget{i}", Manufacturer = "Acme", Msrp = i, CategoryId = cat.Id });
+        await context.SaveChangesAsync();
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery(PageNumber: 2, PageSize: 5));
+
+        result.TotalCount.Should().Be(15);
+        result.PageNumber.Should().Be(2);
+        result.PageSize.Should().Be(5);
+        result.TotalPages.Should().Be(3);
+        result.Items.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_sorts_by_category_name_ascending_by_default()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_sorts_by_category_name_ascending_by_default));
+        var catZ = await AddCategoryAsync(context, "Zeta");
+        var catA = await AddCategoryAsync(context, "Alpha");
+        context.Guizmos.Add(new Guizmo { Name = "WidgetZ", Manufacturer = "Acme", Msrp = 1m, CategoryId = catZ.Id });
+        context.Guizmos.Add(new Guizmo { Name = "WidgetA", Manufacturer = "Acme", Msrp = 1m, CategoryId = catA.Id });
+        await context.SaveChangesAsync();
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery());
+
+        var items = result.Items.ToList();
+        items[0].CategoryName.Should().Be("Alpha");
+        items[1].CategoryName.Should().Be("Zeta");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_sorts_by_category_name_descending()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_sorts_by_category_name_descending));
+        var catA = await AddCategoryAsync(context, "Alpha");
+        var catZ = await AddCategoryAsync(context, "Zeta");
+        context.Guizmos.Add(new Guizmo { Name = "WidgetA", Manufacturer = "Acme", Msrp = 1m, CategoryId = catA.Id });
+        context.Guizmos.Add(new Guizmo { Name = "WidgetZ", Manufacturer = "Acme", Msrp = 1m, CategoryId = catZ.Id });
+        await context.SaveChangesAsync();
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery(SortOrder: "desc"));
+
+        var items = result.Items.ToList();
+        items[0].CategoryName.Should().Be("Zeta");
+        items[1].CategoryName.Should().Be("Alpha");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_sort_order_is_case_insensitive()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_sort_order_is_case_insensitive));
+        var catA = await AddCategoryAsync(context, "Alpha");
+        var catZ = await AddCategoryAsync(context, "Zeta");
+        context.Guizmos.Add(new Guizmo { Name = "WidgetA", Manufacturer = "Acme", Msrp = 1m, CategoryId = catA.Id });
+        context.Guizmos.Add(new Guizmo { Name = "WidgetZ", Manufacturer = "Acme", Msrp = 1m, CategoryId = catZ.Id });
+        await context.SaveChangesAsync();
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery(SortOrder: "DESC"));
+
+        var items = result.Items.ToList();
+        items[0].CategoryName.Should().Be("Zeta");
+        items[1].CategoryName.Should().Be("Alpha");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_last_page_returns_remaining_items()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_last_page_returns_remaining_items));
+        var cat = await AddCategoryAsync(context, "Electronics");
+        for (var i = 1; i <= 7; i++)
+            context.Guizmos.Add(new Guizmo { Name = $"Widget{i}", Manufacturer = "Acme", Msrp = i, CategoryId = cat.Id });
+        await context.SaveChangesAsync();
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery(PageNumber: 2, PageSize: 5));
+
+        result.TotalCount.Should().Be(7);
+        result.TotalPages.Should().Be(2);
+        result.Items.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_returns_empty_result_when_no_guizmos_exist()
+    {
+        await using var context = CreateContext(nameof(GetPagedAsync_returns_empty_result_when_no_guizmos_exist));
+
+        var service = new GuizmoService(context);
+        var result = await service.GetPagedAsync(new GuizmoPagedQuery());
+
+        result.TotalCount.Should().Be(0);
+        result.TotalPages.Should().Be(0);
+        result.Items.Should().BeEmpty();
+    }
 }

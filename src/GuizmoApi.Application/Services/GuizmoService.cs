@@ -21,6 +21,31 @@ public class GuizmoService : IGuizmoService
         return guizmos.Select(ToDto);
     }
 
+    public async Task<PagedResult<GuizmoDto>> GetPagedAsync(GuizmoPagedQuery query, CancellationToken ct = default)
+    {
+        var q = _context.Guizmos.Include(x => x.Category).AsNoTracking();
+
+        q = query.SortOrder.Equals("desc", StringComparison.OrdinalIgnoreCase)
+            ? q.OrderByDescending(x => x.Category!.Name)
+            : q.OrderBy(x => x.Category!.Name);
+
+        var totalCount = await q.CountAsync(ct);
+        var items = await q
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(ct);
+
+        var totalPages = (int)Math.Ceiling(totalCount / (double)query.PageSize);
+
+        return new PagedResult<GuizmoDto>(
+            items.Select(ToDto),
+            totalCount,
+            query.PageNumber,
+            query.PageSize,
+            totalPages
+        );
+    }
+
     public async Task<GuizmoDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var guizmo = await _context.Guizmos.Include(x => x.Category).AsNoTracking()
