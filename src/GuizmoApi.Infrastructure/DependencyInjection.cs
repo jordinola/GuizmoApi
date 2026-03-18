@@ -16,7 +16,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddTransient<IExternalGuizmoApiClient, StubExternalGuizmoApiClient>();
+        services.AddScoped<IExternalGuizmoApiClient, StubExternalGuizmoApiClient>();
 
         return services;
     }

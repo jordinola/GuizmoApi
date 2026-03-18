@@ -1,4 +1,3 @@
-// src/GuizmoApi.Infrastructure/ExternalApi/StubExternalGuizmoApiClient.cs
 using Microsoft.EntityFrameworkCore;
 using GuizmoApi.Domain.Interfaces;
 using GuizmoApi.Infrastructure.Data;
@@ -16,6 +15,7 @@ public class StubExternalGuizmoApiClient : IExternalGuizmoApiClient
 
     public async Task<IEnumerable<int>> GetRecommendedIdsAsync(int userId, int? guizmoId, CancellationToken ct = default)
     {
+        // Stub: userId and guizmoId are intentionally ignored; the real API will use them
         var ids = await _context.Guizmos.Select(g => g.Id).ToListAsync(ct);
         return ids.OrderBy(_ => Random.Shared.Next()).Take(3);
     }
