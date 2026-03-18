@@ -109,4 +109,44 @@ public class GuizmosControllerTests
 
         result.Should().BeOfType<NotFoundResult>();
     }
+
+    [Fact]
+    public async Task GetPaged_returns_200_with_paged_result()
+    {
+        var pagedResult = new PagedResult<GuizmoDto>(
+            Items: new List<GuizmoDto> { new(1, "Widget", "Acme", null, 9.99m, 1, "Electronics") },
+            TotalCount: 1,
+            PageNumber: 1,
+            PageSize: 10,
+            TotalPages: 1
+        );
+        _serviceMock.Setup(s => s.GetPagedAsync(It.IsAny<GuizmoPagedQuery>(), default))
+            .ReturnsAsync(pagedResult);
+
+        var result = await _controller.GetPaged(new GuizmoPagedQuery(), default);
+
+        var ok = result.Result as OkObjectResult;
+        ok.Should().NotBeNull();
+        ok!.StatusCode.Should().Be(200);
+        ok.Value.Should().BeEquivalentTo(pagedResult);
+    }
+
+    [Fact]
+    public async Task GetPaged_passes_query_params_to_service()
+    {
+        var query = new GuizmoPagedQuery(PageNumber: 2, PageSize: 5, SortOrder: "desc");
+        var pagedResult = new PagedResult<GuizmoDto>(
+            Items: Enumerable.Empty<GuizmoDto>(),
+            TotalCount: 0,
+            PageNumber: 2,
+            PageSize: 5,
+            TotalPages: 0
+        );
+        _serviceMock.Setup(s => s.GetPagedAsync(query, default)).ReturnsAsync(pagedResult);
+
+        var result = await _controller.GetPaged(query, default);
+
+        _serviceMock.Verify(s => s.GetPagedAsync(query, default), Times.Once);
+        result.Result.Should().BeOfType<OkObjectResult>();
+    }
 }

@@ -24,6 +24,18 @@ public class GuizmosController : ControllerBase
         return Ok(guizmos);
     }
 
+    /// <summary>Returns a paginated list of Guizmos sorted by category name.</summary>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(PagedResult<GuizmoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PagedResult<GuizmoDto>>> GetPaged(
+        [FromQuery] GuizmoPagedQuery query,
+        CancellationToken ct)
+    {
+        var result = await _service.GetPagedAsync(query, ct);
+        return Ok(result);
+    }
+
     /// <summary>Returns a single Guizmo by id.</summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GuizmoDto), StatusCodes.Status200OK)]
